@@ -1,26 +1,25 @@
+// backend/server.js
+
 const express = require('express');
 const mongoose = require('mongoose');
-const bodyParser = require('body-parser');
-const campaignRoutes = require('./routes/campaigns'); // Import the routes
+const cors = require('cors');
+const campaignRoutes = require('./routes/campaigns');
+const userRoutes = require('./routes/users'); // Import user routes
 
 const app = express();
-const PORT = process.env.PORT || 5000;
+app.use(cors());
+app.use(express.json());
 
-// Middleware
-app.use(bodyParser.json());
+mongoose.connect('mongodb://localhost:27017/carequakedev', { useNewUrlParser: true, useUnifiedTopology: true })
+    .then(() => console.log('MongoDB connected'))
+    .catch(err => console.error(err));
 
-// Connect to MongoDB
-mongoose.connect('mongodb://localhost:27017/CareQuake', {
-    useNewUrlParser: true,
-    useUnifiedTopology: true
-})
-.then(() => console.log('MongoDB connected'))
-.catch(err => console.error('MongoDB connection error:', err));
-
-// Use the routes
+// Use routes
 app.use('/api/campaigns', campaignRoutes);
+app.use('/api/users', userRoutes); // Use user routes
 
-// Start the server
+const PORT = 5000;
 app.listen(PORT, () => {
-    console.log(`Server is running on port ${PORT}`);
+    console.log(`Server is running on http://localhost:${PORT}`);
 });
+
