@@ -1,0 +1,151 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Fundraising App</title>
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            padding: 20px;
+        }
+        h2 {
+            color: #333;
+        }
+        form {
+            margin-bottom: 20px;
+        }
+        input {
+            margin: 5px 0;
+            padding: 8px;
+            width: 100%;
+            max-width: 300px;
+        }
+        button {
+            padding: 10px;
+            background-color: #007bff;
+            color: white;
+            border: none;
+            cursor: pointer;
+        }
+        button:hover {
+            background-color: #0056b3;
+        }
+    </style>
+</head>
+<body>
+
+<h1>Fundraising App</h1>
+
+<h2>User Registration</h2>
+<form id="registration-form">
+    <input type="text" id="username" placeholder="Username" required>
+    <input type="password" id="password" placeholder="Password" required>
+    <button type="submit">Register</button>
+</form>
+
+<h2>User Login</h2>
+<form id="login-form">
+    <input type="text" id="login-username" placeholder="Username" required>
+    <input type="password" id="login-password" placeholder="Password" required>
+    <button type="submit">Login</button>
+</form>
+
+<h2>Create Campaign</h2>
+<form id="campaign-form">
+    <input type="text" id="campaign-title" placeholder="Campaign Title" required>
+    <textarea id="campaign-description" placeholder="Campaign Description" required></textarea>
+    <input type="number" id="campaign-goal" placeholder="Campaign Goal" required>
+    <button type="submit">Create Campaign</button>
+</form>
+
+<h2>Contribute to Campaign</h2>
+<form id="contribution-form">
+    <input type="text" id="contribution-campaign-id" placeholder="Campaign ID" required>
+    <input type="number" id="contribution-amount" placeholder="Contribution Amount" required>
+    <button type="submit">Contribute</button>
+</form>
+
+<div id="response-message"></div>
+
+<script>
+    $(document).ready(function () {
+        // User Registration
+        $('#registration-form').on('submit', function (e) {
+            e.preventDefault();
+            const username = $('#username').val();
+            const password = $('#password').val();
+            $.post('http://localhost:5000/api/users/register', { username, password })
+                .done(function (data) {
+                    $('#response-message').text(data.message || "User registered successfully!");
+                })
+                .fail(function (xhr) {
+                    $('#response-message').text(xhr.responseJSON.error);
+                });
+        });
+
+        // User Login
+        $('#login-form').on('submit', function (e) {
+            e.preventDefault();
+            const username = $('#login-username').val();
+            const password = $('#login-password').val();
+            $.post('http://localhost:5000/api/users/login', { username, password })
+                .done(function (data) {
+                    localStorage.setItem('token', data.token); // Store token
+                    $('#response-message').text("Login successful!");
+                })
+                .fail(function (xhr) {
+                    $('#response-message').text(xhr.responseJSON.error);
+                });
+        });
+
+        // Create Campaign
+        $('#campaign-form').on('submit', function (e) {
+            e.preventDefault();
+            const title = $('#campaign-title').val();
+            const description = $('#campaign-description').val();
+            const goal = $('#campaign-goal').val();
+            $.ajax({
+                url: 'http://localhost:5000/api/campaigns',
+                method: 'POST',
+                headers: {
+                    Authorization: `Bearer ${localStorage.getItem('token')}`
+                },
+                contentType: 'application/json',
+                data: JSON.stringify({ title, description, goal })
+            })
+            .done(function (data) {
+                $('#response-message').text(data.message || "Campaign created successfully!");
+            })
+            .fail(function (xhr) {
+                $('#response-message').text(xhr.responseJSON.error);
+            });
+        });
+
+        // Contribute to Campaign
+        $('#contribution-form').on('submit', function (e) {
+            e.preventDefault();
+            const campaignId = $('#contribution-campaign-id').val();
+            const amount = $('#contribution-amount').val();
+            $.ajax({
+                url: 'http://localhost:5000/api/contributions',
+                method: 'POST',
+                headers: {
+                    Authorization: `Bearer ${localStorage.getItem('token')}`
+                },
+                contentType: 'application/json',
+                data: JSON.stringify({ campaignId, amount })
+            })
+            .done(function (data) {
+                $('#response-message').text(data.message || "Contribution made successfully!");
+            })
+            .fail(function (xhr) {
+                $('#response-message').text(xhr.responseJSON.error);
+            });
+        });
+    });
+</script>
+
+</body>
+</html>
